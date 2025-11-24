@@ -1,231 +1,90 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>GigaPlata — OFFLINE</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0a0a0c"/>
-  <link rel="manifest" href="/manifest-c.json"/>
-  <title>GigaPlata — Full PWA</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root{--bg:#060606;--panel:#0f0f14;--accent:#b80000;--muted:#9a9a9a;--text:#e6e6e6;--radius:14px}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial;background:linear-gradient(180deg,#070707,#030303);color:var(--text);min-height:100vh}
-    .app{max-width:1100px;margin:18px auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    h1{color:var(--accent);margin:0}
-    .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
-    .card{background:var(--panel);border-radius:var(--radius);padding:16px;border:1px solid rgba(255,255,255,0.03)}
-    .form-row{display:flex;gap:8px}
-    input,textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;color:var(--text);width:100%}
-    .btn{background:var(--accent);color:#fff;padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
-    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--accent);padding:8px;border-radius:10px;cursor:pointer}
-    .posts{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-    .post{display:flex;gap:12px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);align-items:flex-start}
-    .post img{width:56px;height:56px;border-radius:12px;object-fit:cover}
-    .meta{color:var(--muted);font-size:13px}
-    .post-actions{margin-left:auto;display:flex;flex-direction:column;gap:8px}
-    .modal-wrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:9999}
-    .modal{background:var(--panel);border-radius:12px;padding:18px;width:clamp(320px,60%,720px);border:1px solid rgba(255,255,255,0.03)}
-    .modal-header{display:flex;align-items:center;justify-content:space-between}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
-  </style>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+
 </head>
 <body>
-  <div class="app" id="app">
-    <header><h1>GigaPlata — Full PWA</h1><div class="meta" id="status" aria-live="polite">Состояние: online</div></header>
 
-    <div class="layout">
-      <main class="card" aria-labelledby="forumLabel">
-        <h2 id="forumLabel" style="color:var(--accent)">Форум</h2>
+<header>
+  <h1>GigaPlata</h1>
+  <nav>
+    <a href="#features">Фишки</a>
+    <a href="#forum">Форум</a>
+    <a href="#download">Скачать</a>
+  </nav>
+</header>
 
-        <div class="form-row" style="margin-bottom:12px">
-          <select id="topic" aria-label="Тема"><option value="memes">Мемы</option><option value="tech">Техника</option><option value="ideas">Идеи</option></select>
-          <input id="username" placeholder="Имя (для сессии)" aria-label="Имя пользователя"/>
-          <button id="send" class="btn" aria-label="Отправить">Отправить</button>
-        </div>
 
-        <textarea id="msg" rows="4" placeholder="Текст сообщения..." aria-label="Текст сообщения"></textarea>
-
-        <div class="posts" id="posts" role="list"></div>
-      </main>
-
-      <aside class="card" aria-labelledby="statsLabel">
-        <h3 id="statsLabel" style="color:var(--accent)">Инструменты</h3>
-        <div style="margin-top:10px">
-          <canvas id="chart" width="320" height="160" aria-label="График скачиваний"></canvas>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-          <button id="export" class="ghost">Экспорт</button>
-          <button id="importBtn" class="ghost">Импорт</button>
-          <input id="importFile" type="file" accept=".json" style="display:none"/>
-          <button id="clearAll" class="ghost">Очистить</button>
-        </div>
-
-        <div style="margin-top:12px" class="meta" id="outbox">Outbox: <span id="outboxCount">0</span></div>
-      </aside>
-    </div>
-
-    <div class="modal-wrap" id="modalWrap" role="dialog" aria-hidden="true">
-      <div class="modal" role="document">
-        <div class="modal-header"><div class="modal-title" id="modalTitle">Modal</div><button id="modalClose" class="ghost" aria-label="Закрыть">✕</button></div>
-        <div id="modalContent" style="margin-top:12px"></div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-          <button id="modalCancel" class="ghost">Отмена</button>
-          <button id="modalConfirm" class="btn">Подтвердить</button>
-        </div>
-      </div>
-    </div>
-
-    <footer>GigaPlata • PWA demo</footer>
+<section id="features">
+  <h2>Преимущества</h2>
+  <div class="features">
+    <div class="feature"><h3>Офлайн</h3><p>Работает без сети через PWA</p></div>
+    <div class="feature"><h3>Локально</h3><p>Сообщения хранятся в браузере</p></div>
+    <div class="feature"><h3>Быстро</h3><p>Кэширование + мгновенная загрузка</p></div>
+    <div class="feature"><h3>Безопасно</h3><p>Ничего лишнего не отправляется</p></div>
   </div>
+</section>
 
-<script>
-/* Full PWA: accessible, outbox, import/export, modal confirm, chart, service worker */
-(() => {
-  const FORUM = 'giga_forum_c_v1';
-  const OUTBOX = 'giga_outbox_c_v1';
-  const DOWNLOADS = 'giga_downloads_c_v1';
 
-  const postsEl = document.getElementById('posts');
-  const topicEl = document.getElementById('topic');
-  const usernameEl = document.getElementById('username');
-  const msgEl = document.getElementById('msg');
-  const sendBtn = document.getElementById('send');
-  const outboxCount = document.getElementById('outboxCount');
-  const statusEl = document.getElementById('status');
+<section id="forum">
+  <h2>Форум</h2>
+  <div class="forum-area">
 
-  const modalWrap = document.getElementById('modalWrap');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalContent = document.getElementById('modalContent');
-  const modalClose = document.getElementById('modalClose');
-  const modalCancel = document.getElementById('modalCancel');
-  const modalConfirm = document.getElementById('modalConfirm');
+    <select id="topicSelect" class="topic-select">
+      <option value="general">Общее</option>
+      <option value="ideas">Идеи</option>
+      <option value="jokes">Юмор</option>
+    </select>
 
-  const exportBtn = document.getElementById('export');
-  const importBtn = document.getElementById('importBtn');
-  const importFile = document.getElementById('importFile');
-  const clearAllBtn = document.getElementById('clearAll');
+    <div id="posts" class="posts"></div>
 
-  function read(key){ try { return JSON.parse(localStorage.getItem(key)||'{}'); } catch(e){ return {}; } }
-  function write(key,val){ localStorage.setItem(key, JSON.stringify(val)); }
+    <textarea id="msg" placeholder="Сообщение…"></textarea>
+    <input id="username" placeholder="Имя">
+    <button id="send" class="send-btn">Отправить</button>
 
-  function getForum(){ return read(FORUM) || {}; }
-  function setForum(obj){ write(FORUM, obj); }
+  </div>
+</section>
 
-  function getOutbox(){ return JSON.parse(localStorage.getItem(OUTBOX)||'[]'); }
-  function setOutbox(arr){ localStorage.setItem(OUTBOX, JSON.stringify(arr)); outboxCount.textContent = arr.length; }
 
-  function addPostToForum(topic, post){
-    const f = getForum(); f[topic] ??= []; f[topic].push(post); setForum(f);
-  }
+<section id="download">
+  <h2>Скачать</h2>
+  <div class="download-box">
+    <a id="downloadLink" href="GigaPlata.exe" download>
+      <button class="download-btn">Скачать</button>
+    </a>
+  </div>
+</section>
 
-  function uid(){ return `${Date.now()}-${Math.random().toString(36).slice(2,8)}`; }
-  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  function render(){
-    postsEl.innerHTML = '';
-    const f = getForum();
-    const arr = f[topicEl.value] || [];
-    if(!arr.length){ postsEl.innerHTML = '<div class="meta">Пусто</div>'; return; }
-    arr.slice().reverse().forEach(p => {
-      const li = document.createElement('div'); li.className='post'; li.setAttribute('role','listitem');
-      li.innerHTML = `<img src="${p.avatar||'https://via.placeholder.com/56'}" alt="avatar">
-        <div>
-          <div><strong>${escapeHtml(p.username)}</strong> <span class="meta">• ${new Date(p.time).toLocaleString()}</span></div>
-          <div style="margin-top:8px">${escapeHtml(p.text)}</div>
-        </div>
-        <div class="post-actions" aria-hidden="false">
-          <button class="ghost" data-id="${p.id}" data-action="preview">Preview</button>
-          <button class="ghost" data-id="${p.id}" data-action="delete">Delete</button>
-        </div>`;
-      postsEl.appendChild(li);
-    });
-  }
+<!-- MODAL DELETE -->
+<div id="modal-wrap">
+  <div id="modal">
+    <p>Удалить сообщение?</p>
 
-  sendBtn.addEventListener('click', () => {
-    const text = (msgEl.value||'').trim(); if(!text) return alert('Введите текст');
-    const post = { id: uid(), username: usernameEl.value||'Аноним', text, avatar:'', time: new Date().toISOString() };
-    if(navigator.onLine){
-      addPostToForum(topicEl.value, post); render(); msgEl.value=''; announce('Сообщение опубликовано');
-    } else {
-      // add to outbox
-      const ob = getOutbox(); ob.push({topic:topicEl.value, post}); setOutbox(ob); msgEl.value=''; announce('Сохранено в Outbox (оффлайн)');
-    }
-  });
+    <div class="mc">
+      <button id="cancelDelete">Отмена</button>
+      <button id="confirmDelete">Удалить</button>
+    </div>
+  </div>
+</div>
 
-  // modal handling
-  let modalConfirmCb = null;
-  function openModal(title, html, confirmCb){
-    modalTitle.textContent = title; modalContent.innerHTML = html; modalWrap.style.display='flex'; modalWrap.setAttribute('aria-hidden','false');
-    modalConfirmCb = confirmCb;
-    modalConfirm.focus();
-  }
-  function closeModal(){ modalWrap.style.display='none'; modalWrap.setAttribute('aria-hidden','true'); modalConfirmCb = null; }
+<script src="app.js"></script>
 
-  modalClose.addEventListener('click', closeModal); modalCancel.addEventListener('click', closeModal);
-  modalConfirm.addEventListener('click', () => { if(modalConfirmCb) modalConfirmCb(); closeModal(); });
-
-  postsEl.addEventListener('click', (e) => {
-    const btn = e.target.closest('button'); if(!btn) return;
-    const id = btn.dataset.id; const action = btn.dataset.action;
-    const f = getForum(); const arr = f[topicEl.value] || []; const post = arr.find(p=>p.id===id);
-    if(action==='preview'){
-      openModal('Предпросмотр', `<strong>${escapeHtml(post.username)}</strong><div style="margin-top:8px">${escapeHtml(post.text)}</div>`);
-    } else if(action==='delete'){
-      openModal('Подтвердите удаление', `<div>Удалить сообщение от <strong>${escapeHtml(post.username)}</strong>?</div>`, () => {
-        const next = arr.filter(p=>p.id!==id); f[topicEl.value] = next; setForum(f); render(); announce('Сообщение удалено');
-      });
-    }
-  });
-
-  // outbox sync when back online
-  window.addEventListener('online', () => {
-    announce('Сеть: online'); statusEl.textContent = 'Состояние: online';
-    const ob = getOutbox(); if(ob.length){
-      const f = getForum();
-      ob.forEach(item => { f[item.topic] ??= []; f[item.topic].push(item.post); });
-      setForum(f); setOutbox([]); render(); announce('Очередь отправлена');
-    }
-  });
-  window.addEventListener('offline', () => { statusEl.textContent = 'Состояние: offline'; announce('Сеть: offline'); });
-
-  function announce(text){ const live = document.createElement('div'); live.className='sr-only'; live.setAttribute('aria-live','polite'); live.textContent=text; document.body.appendChild(live); setTimeout(()=>live.remove(),1500); }
-
-  // import/export & clear
-  exportBtn.addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(getForum(),null,2)], {type:'application/json'}); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'giga_forum_export.json'; a.click(); URL.revokeObjectURL(url);
-  });
-  importBtn.addEventListener('click', () => importFile.click());
-  importFile.addEventListener('change', (e) => {
-    const f = e.target.files[0]; if(!f) return;
-    const reader = new FileReader(); reader.onload = (ev) => {
-      try { const data = JSON.parse(ev.target.result); setForum(data); render(); alert('Импортировано'); } catch(err){ alert('Неверный формат'); }
-    }; reader.readAsText(f);
-  });
-  clearAllBtn.addEventListener('click', () => { if(!confirm('Очистить всё?')) return; setForum({}); setOutbox([]); render(); announce('Данные очищены'); });
-
-  // downloads chart
-  const ctx = document.getElementById('chart').getContext('2d');
-  function drawChart(){
-    const raw = JSON.parse(localStorage.getItem(DOWNLOADS) || '[]');
-    const labels = raw.map(t=>new Date(t).toLocaleTimeString());
-    const data = raw.map((_,i)=>i+1);
-    if(window._chart) window._chart.destroy();
-    window._chart = new Chart(ctx, {type:'line',data:{labels, datasets:[{label:'Скачивания',data,fill:true,tension:0.3}]}, options:{plugins:{legend:{display:false}}}});
-  }
-  if(!localStorage.getItem(DOWNLOADS)) localStorage.setItem(DOWNLOADS, JSON.stringify([new Date().toISOString()]));
-  drawChart();
-
-  // service worker
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('/sw-c.js').catch(console.error); }
-
-  // init
-  topicEl.addEventListener('change', render);
-  render();
-  setOutbox(getOutbox());
-})();
-</script>
 </body>
 </html>
