@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KMPCO & MADXS - GigaPlata - OFICIAL</title>
-  <!-- fixed: ensured regex literals are correct and added small safety tweaks -->
   <style>
     :root {
       --bg: #0a0a0c;
@@ -17,17 +16,21 @@
     }
     * {margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
     body{background:var(--bg);color:var(--text);padding-bottom:80px;}
-    header{width:100%;padding:30px 8%;background:var(--panel);border-bottom:2px solid #000;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
+    header{width:100%;padding:20px 8%;background:var(--panel);border-bottom:2px solid #000;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
     header h1{font-size:26px;font-weight:900;letter-spacing:1px;color:var(--accent);text-shadow:0 0 7px rgba(184,0,0,0.6);animation:headerPulse 4s infinite;}
-    nav{display:flex;gap:35px;}
+    nav{display:flex;gap:25px;align-items:center;}
     nav a{text-decoration:none;color:var(--text-dim);font-size:15px;transition:var(--speed);}
     nav a:hover{color:var(--accent);text-shadow:0 0 6px rgba(184,0,0,0.8);}
+    .auth-buttons{display:flex;gap:12px;}
+    .auth-buttons button{background:var(--accent);border:none;padding:6px 14px;color:#fff;border-radius:var(--radius);cursor:pointer;font-weight:700;transition:var(--speed);}
+    .auth-buttons button:hover{box-shadow:0 0 10px rgba(184,0,0,0.6);transform:translateY(-2px);}
+
     section{padding:40px 8%;}
     h2{font-size:28px;margin-bottom:18px;color:var(--accent);}    
     .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:24px}
     .feature{background:var(--panel);padding:18px;border-radius:var(--radius);border:1px solid #000;transition:var(--speed);position:relative;}
     .feature:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 0 15px rgba(184,0,0,0.4);}
-    .feature h3{margin-bottom:8px;color:var(--accent);font-size:16px}
+    .feature h3{margin-bottom:8px;color:var(--accent);font-size:16}
     .feature p{font-size:13px;color:var(--text-dim);line-height:1.4}
     .download-box{margin-top:20px;display:flex;gap:12px;align-items:center}
     .download-btn{background:var(--accent);padding:12px 18px;border:none;color:#fff;font-size:15px;border-radius:var(--radius);cursor:pointer;transition:var(--speed);font-weight:700}
@@ -39,27 +42,17 @@
     .post{background:#09090d;padding:12px;border-radius:var(--radius);border:1px solid #000;position:relative;display:flex;align-items:flex-start;gap:12px}
     .post img{width:44px;height:44px;border-radius:50%;object-fit:cover}
     .post-content{flex:1}
-    .post span{font-size:12px;color:var(--text-dim);display:block;margin-top:6px}
     .post-header{font-weight:700;color:var(--accent);font-size:14px}
     textarea{width:100%;height:84px;background:#0d0d12;border:1px solid #000;border-radius:var(--radius);color:var(--text);padding:8px;margin-bottom:8px;resize:vertical}
-    .auth-box{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .auth-box input{padding:8px;border-radius:8px;background:#0d0d12;border:1px solid #000;color:var(--text)}
+    .auth-box{display:flex;flex-direction:column;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+    .auth-box input{padding:8px;border-radius:8px;background:#0d0d12;border:1px solid #000;color:var(--text);}
     .send-btn{background:var(--accent);padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;transition:var(--speed)}
     .send-btn:hover{box-shadow:0 0 15px rgba(184,0,0,0.5);transform:translateY(-3px)}
-    .like-btn{background:transparent;border:none;color:var(--accent);cursor:pointer;font-size:16px;transition:0.2s;margin-right:6px}
-    .like-btn.liked{color:#fff}
-    .edit-btn,.delete-btn{background:transparent;border:none;color:var(--accent);cursor:pointer;font-size:13px;margin-left:6px}
-
-    .counter-box{display:flex;gap:12px;align-items:center;margin-left:12px}
-    .counter{background:#070707;border-radius:8px;padding:8px 10px;border:1px solid #000;color:var(--text-dim);font-weight:700}
 
     @keyframes headerPulse{0%{text-shadow:0 0 4px var(--accent)}50%{text-shadow:0 0 14px var(--accent)}100%{text-shadow:0 0 4px var(--accent)}}
     audio{display:none}
     .toast{position:fixed;bottom:20px;right:20px;background:#b80000;color:#fff;padding:12px 20px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity 0.4s;z-index:1000}
     .toast.show{opacity:1;pointer-events:auto}
-
-    .auth-status{display:flex;gap:12px;align-items:center}
-    .auth-status img{width:34px;height:34px;border-radius:50%}
   </style>
 </head>
 <body>
@@ -72,8 +65,24 @@
       <a href="#features">Главная</a>
       <a href="#forum">Форум</a>
       <a href="#download">Скачать</a>
+      <div class="auth-buttons">
+        <button id="loginBtn">Войти</button>
+        <button id="regBtn">Регистрация</button>
+      </div>
     </nav>
   </header>
+
+  <section id="authSection" style="padding:40px 8%;display:none;">
+    <div class="auth-box">
+      <input type="text" id="usernameInput" placeholder="Имя пользователя" />
+      <input type="email" id="emailInput" placeholder="Email" />
+      <input type="password" id="passwordInput" placeholder="Пароль" />
+      <button class="send-btn" id="submitAuth">Отправить</button>
+      <div style="margin-top:8px;">
+        <button class="send-btn" id="googleLoginBtn">Войти через Google</button>
+      </div>
+    </div>
+  </section>
 
   <section id="features">
     <h2>Фишки сайта</h2>
@@ -88,7 +97,6 @@
       <a href="downloads/GigaPlata.exe" download id="downloadLink"><button class="download-btn">Скачать GigaPlata.exe</button></a>
       <div class="counter-box">
         <div class="counter" id="globalCount">Всего скачиваний: 0</div>
-        <div class="counter" id="userCount">Вы скачали: 0</div>
       </div>
     </div>
   </section>
@@ -109,23 +117,8 @@
           <option value="fun">Развлечения</option>
           <option value="tutorials">Туториалы</option>
         </select>
-
-        <div class="auth-status" id="authStatus"></div>
       </div>
-
-      <div class="auth-box" id="authBox">
-        <!-- registration / login inputs -->
-        <input id="regEmail" placeholder="E-mail" type="email">
-        <input id="regUser" placeholder="Имя пользователя">
-        <input id="regPass" placeholder="Пароль" type="password">
-        <input id="regAvatar" placeholder="URL аватарки (опционально)">
-        <button class="send-btn" id="registerBtn">Зарегистрироваться</button>
-        <button class="send-btn" id="loginBtn">Войти</button>
-        <button class="send-btn" id="logoutBtn" style="display:none">Выйти</button>
-      </div>
-
       <div class="posts" id="posts"></div>
-
       <textarea id="msg" placeholder="Написать сообщение..."></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="send-btn" id="send">Отправить</button>
@@ -135,178 +128,62 @@
   </section>
 
 <script>
-// Simple localStorage-backed auth and forum + download counters
 const postsEl = document.getElementById('posts');
 const msg = document.getElementById('msg');
 const send = document.getElementById('send');
 const topic = document.getElementById('topicSelect');
 const toast = document.getElementById('toast');
-const registerBtn = document.getElementById('registerBtn');
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const authStatus = document.getElementById('authStatus');
 const cancelEditBtn = document.getElementById('cancelEdit');
-
-const regEmail = document.getElementById('regEmail');
-const regUser = document.getElementById('regUser');
-const regPass = document.getElementById('regPass');
-const regAvatar = document.getElementById('regAvatar');
-
-const downloadLink = document.getElementById('downloadLink');
-const globalCountEl = document.getElementById('globalCount');
-const userCountEl = document.getElementById('userCount');
-
-let editIndex = null;
+const loginBtn = document.getElementById('loginBtn');
+const regBtn = document.getElementById('regBtn');
+const authSection = document.getElementById('authSection');
+const googleLoginBtn = document.getElementById('googleLoginBtn');
 
 function showToast(msgText){toast.textContent = msgText; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2500);}
 
-// Users stored as array of {email, username, password, avatar, downloads}
-function loadUsers(){try{return JSON.parse(localStorage.getItem('users')||'[]');}catch(e){return [];}}
-function saveUsers(u){localStorage.setItem('users', JSON.stringify(u));}
-function getCurrentUser(){try{return JSON.parse(localStorage.getItem('currentUser')||'null');}catch(e){return null;}}
-function setCurrentUser(u){localStorage.setItem('currentUser', JSON.stringify(u));}
-function clearCurrentUser(){localStorage.removeItem('currentUser');}
-
-function updateAuthUI(){
-  const user = getCurrentUser();
-  authStatus.innerHTML = '';
-  if(user){
-    const img = document.createElement('img'); img.src = user.avatar || 'https://via.placeholder.com/40';
-    const name = document.createElement('div'); name.textContent = user.username + ' ('+user.email+')';
-    authStatus.appendChild(img); authStatus.appendChild(name);
-    logoutBtn.style.display='inline-block'; registerBtn.style.display='none'; loginBtn.style.display='none';
-    regEmail.style.display='none'; regUser.style.display='none'; regPass.style.display='none'; regAvatar.style.display='none';
-  } else {
-    authStatus.textContent = 'Не в сети';
-    logoutBtn.style.display='none'; registerBtn.style.display='inline-block'; loginBtn.style.display='inline-block';
-    regEmail.style.display='inline-block'; regUser.style.display='inline-block'; regPass.style.display='inline-block'; regAvatar.style.display='inline-block';
-  }
-  updateCountsUI();
-}
-
-function registerUser(){
-  const email = (regEmail.value||'').trim(); const username = (regUser.value||'').trim(); const pass = regPass.value||'';
-  if(!email || !username || !pass){ showToast('Заполните email, имя и пароль'); return; }
-  const users = loadUsers();
-  if(users.find(u=>u.email===email)){ showToast('Пользователь с этим email уже существует'); return; }
-  const user = {email, username, password:pass, avatar:(regAvatar.value||'').trim(), downloads:0};
-  users.push(user); saveUsers(users); setCurrentUser(user); updateAuthUI(); showToast('Регистрация выполнена');
-}
-
-function loginUser(){
-  const email = (regEmail.value||'').trim(); const pass = regPass.value||'';
-  const users = loadUsers();
-  const user = users.find(u=>u.email===email && u.password===pass);
-  if(!user){ showToast('Неверный email или пароль'); return; }
-  setCurrentUser(user); updateAuthUI(); showToast('Вход выполнен');
-}
-
-function logoutUser(){ clearCurrentUser(); updateAuthUI(); showToast('Вы вышли'); }
-
-registerBtn.addEventListener('click', registerUser);
-loginBtn.addEventListener('click', loginUser);
-logoutBtn.addEventListener('click', logoutUser);
+// Show/hide auth section
+loginBtn.addEventListener('click',()=>{authSection.style.display='block';});
+regBtn.addEventListener('click',()=>{authSection.style.display='block';});
 
 // Downloads
+const globalCountEl = document.getElementById('globalCount');
 function getGlobalDownloads(){return parseInt(localStorage.getItem('globalDownloads')||'0',10);} 
 function setGlobalDownloads(n){localStorage.setItem('globalDownloads', String(n));}
 function incrementDownload(){
-  const user = getCurrentUser();
   let global = getGlobalDownloads(); global++;
   setGlobalDownloads(global);
-  if(user){
-    const users = loadUsers();
-    const u = users.find(x=>x.email===user.email);
-    if(u){ u.downloads = (u.downloads||0) + 1; saveUsers(users); setCurrentUser(u); }
-  }
   updateCountsUI();
 }
-
-downloadLink.addEventListener('click', (e)=>{
-  // allow download but update counts
+document.getElementById('downloadLink').addEventListener('click',()=>{
   incrementDownload();
   showToast('Спасибо! Скачивание зафиксировано');
 });
-
 function updateCountsUI(){
   globalCountEl.textContent = 'Всего скачиваний: ' + getGlobalDownloads();
-  const user = getCurrentUser();
-  userCountEl.textContent = user ? ('Вы скачали: ' + (user.downloads||0)) : 'Вы скачали: 0';
 }
+updateCountsUI();
 
-// Forum: posts stored under key 'forum' as object {topic: [posts...]}
+// Forum posts
 function loadForum(){try{return JSON.parse(localStorage.getItem('forum')||'{}');}catch(e){return {};}}
 function saveForum(f){localStorage.setItem('forum', JSON.stringify(f));}
-
 function renderPosts(){
   postsEl.innerHTML='';
   const forum = loadForum();
   const arr = forum[topic.value] || [];
-  const current = getCurrentUser();
   arr.forEach((p, i)=>{
     const el = document.createElement('div'); el.className='post';
     const img = document.createElement('img'); img.src = p.avatar || 'https://via.placeholder.com/40';
     const content = document.createElement('div'); content.className='post-content';
-    const header = document.createElement('div'); header.className='post-header'; header.textContent = (p.username||'Аноним') + (p.email? (' ('+p.email+')') : '');
-    const text = document.createElement('div');
-    // use safe replace of newline to <br>
-    text.innerHTML = (p.text||'').split('\n').map(escapeHtml).join('<br>');
+    const header = document.createElement('div'); header.className='post-header'; header.textContent = (p.username||'Аноним');
+    const text = document.createElement('div'); text.innerHTML = (p.text||'').split('\n').map(str=>str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')).join('<br>');
     const time = document.createElement('span'); time.textContent = p.time || '';
     content.appendChild(header); content.appendChild(text); content.appendChild(time);
-
-    const controls = document.createElement('div'); controls.style.display='flex'; controls.style.alignItems='center'; controls.style.gap='6px';
-    const likeBtn = document.createElement('button'); likeBtn.className='like-btn'; likeBtn.textContent='❤'; likeBtn.onclick=()=>{ showToast('Лайк добавлен!') };
-    controls.appendChild(likeBtn);
-
-    // only author can edit/delete
-    if(current && current.email === p.email){
-      const editBtn = document.createElement('button'); editBtn.className='edit-btn'; editBtn.textContent='Ред.'; editBtn.onclick=()=>{
-        editIndex = i; msg.value = p.text; cancelEditBtn.style.display='inline-block'; showToast('Редактируйте сообщение и нажмите Отправить');
-      };
-      const deleteBtn = document.createElement('button'); deleteBtn.className='delete-btn'; deleteBtn.textContent='Удалить'; deleteBtn.onclick=()=>{
-        if(!confirm('Удалить сообщение?')) return;
-        arr.splice(i,1); forum[topic.value]=arr; saveForum(forum); renderPosts(); showToast('Сообщение удалено');
-      };
-      controls.appendChild(editBtn); controls.appendChild(deleteBtn);
-    }
-
-    el.appendChild(img); el.appendChild(content); el.appendChild(controls);
+    el.appendChild(img); el.appendChild(content);
     postsEl.appendChild(el);
   });
 }
-
-// simple HTML escape to avoid injection in posts
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, function(ch){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
-  });
-}
-
-cancelEditBtn.addEventListener('click', ()=>{ editIndex = null; msg.value=''; cancelEditBtn.style.display='none'; showToast('Редактирование отменено'); });
-
-send.addEventListener('click', ()=>{
-  const current = getCurrentUser();
-  if(!current){ showToast('Нужно войти, чтобы отправлять сообщения'); return; }
-  if(!msg.value.trim()) return;
-  const forum = loadForum(); forum[topic.value] ??= [];
-  if(editIndex !== null){
-    // save edit
-    forum[topic.value][editIndex].text = msg.value.trim();
-    forum[topic.value][editIndex].time = new Date().toLocaleString();
-    saveForum(forum);
-    editIndex = null; msg.value=''; cancelEditBtn.style.display='none'; renderPosts(); showToast('Изменения сохранены');
-    return;
-  }
-  const post = {text: msg.value.trim(), time: new Date().toLocaleString(), username: current.username, email: current.email, avatar: current.avatar || ''};
-  forum[topic.value].push(post); saveForum(forum); msg.value=''; renderPosts(); showToast('Сообщение опубликовано');
-});
-
-// topic change
 if(topic) topic.addEventListener('change', renderPosts);
-
-// init
-(function init(){ updateAuthUI(); renderPosts(); updateCountsUI(); })();
-
+renderPosts();
 </script>
 </body>
 </html>
