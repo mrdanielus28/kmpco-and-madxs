@@ -17,7 +17,14 @@
     * {margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
     body{background:var(--bg);color:var(--text);padding-bottom:80px;}
     header{width:100%;padding:20px 8%;background:var(--panel);border-bottom:2px solid #000;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
-    header h1{font-size:26px;font-weight:900;letter-spacing:1px;color:var(--accent);text-shadow:0 0 7px rgba(184,0,0,0.6);animation:headerPulse 4s infinite;}
+    header h1{font-size:26px;font-weight:900;letter-spacing:1px;color:var(--accent);text-shadow:0 0 7px rgba(184,0,0,0.6);animation:headerPulse 4s infinite; display:flex;align-items:center;}
+    .site-logo { 
+      width: 40px; 
+      height: 40px; 
+      margin-right: 10px; 
+      border-radius: 5px; 
+      animation:headerPulse 4s infinite; 
+    }
     nav{display:flex;gap:15px;align-items:center;}
     nav a{text-decoration:none;color:var(--text-dim);font-size:15px;transition:var(--speed);}
     nav a:hover{color:var(--accent);text-shadow:0 0 6px rgba(184,0,0,0.8);}
@@ -44,8 +51,8 @@
     .post-content{flex:1}
     .post-header{font-weight:700;color:var(--accent);font-size:14}
 
-    textarea{width:100%;height:120px;background:#1c1c1f;border:1px solid #222;border-radius:var(--radius);color:var(--text);padding:14px 16px;margin-bottom:8px;resize:none;font-size:15px;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;outline:none;box-shadow:0 0 6px rgba(184,0,0,0.3);transition:0.3s;}
-    textarea:focus{border-color:var(--accent);box-shadow:0 0 12px rgba(184,0,0,0.5);}
+    textarea{width:100%;height:140px;background:#1c1c1f;border:1px solid #222;border-radius:var(--radius);color:var(--text);padding:14px 16px;margin-bottom:8px;resize:none;font-size:15px;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;outline:none;box-shadow:0 0 8px rgba(184,0,0,0.3);transition:0.3s;}
+    textarea:focus{border-color:var(--accent);box-shadow:0 0 16px rgba(184,0,0,0.5);}
 
     .auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,12,0.95);display:flex;justify-content:center;align-items:center;z-index:100;display:none;}
     .auth-box{background:var(--panel);padding:20px;border-radius:var(--radius);display:flex;flex-direction:column;gap:12px;width:320px;}
@@ -53,13 +60,21 @@
     .send-btn:hover{box-shadow:0 0 15px rgba(184,0,0,0.5);transform:translateY(-3px)}
     .auth-title{text-align:center;color:var(--accent);margin-bottom:8px;font-size:18px;font-weight:700;}
 
-    @keyframes headerPulse{0%{text-shadow:0 0 4px var(--accent)}50%{text-shadow:0 0 14px var(--accent)}100%{text-shadow:0 0 4px var(--accent)}}
+    @keyframes headerPulse{
+      0%{text-shadow:0 0 4px var(--accent);}
+      50%{text-shadow:0 0 14px var(--accent);}
+      100%{text-shadow:0 0 4px var(--accent);}
+    }
   </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
   <header>
-    <h1>KMPCO & MADXS - GigaPlata</h1>
+    <h1>
+      <img src="logo.png" alt="Logo" class="site-logo" />
+      KMPCO & MADXS - GigaPlata
+    </h1>
     <nav>
       <a href="#features">Главная</a>
       <a href="#forum">Форум</a>
@@ -71,7 +86,6 @@
     </nav>
   </header>
 
-  <!-- Экран входа/регистрации -->
   <div id="authOverlay" class="auth-overlay">
     <div class="auth-box">
       <div class="auth-title" id="authTitle">Вход</div>
@@ -80,7 +94,7 @@
       <input type="password" id="passwordInput" placeholder="Пароль" />
       <button class="send-btn" id="submitAuth">Отправить</button>
       <div style="text-align:center;margin:6px 0;color:var(--text-dim);">ИЛИ</div>
-      <button class="send-btn" id="googleLoginBtn">Войти через Google</button>
+      <div id="googleSignInDiv"></div>
       <button class="send-btn" id="closeAuth">Закрыть</button>
     </div>
   </div>
@@ -124,7 +138,6 @@
     </div>
   </section>
 
-  <script src="google.js"></script>
   <script>
     const authOverlay = document.getElementById('authOverlay');
     const authTitle = document.getElementById('authTitle');
@@ -134,7 +147,7 @@
     document.getElementById('registerHeaderBtn').addEventListener('click',()=>{authOverlay.style.display='flex'; authTitle.textContent='Регистрация';});
     document.getElementById('closeAuth').addEventListener('click',()=>{authOverlay.style.display='none';});
 
-    submitAuth.addEventListener('click',()=>{
+    submitAuth.addEventListener('click',()=>{ 
       const username = document.getElementById('usernameInput').value;
       const email = document.getElementById('emailInput').value;
       const password = document.getElementById('passwordInput').value;
@@ -146,6 +159,25 @@
         document.getElementById('passwordInput').value='';
       } else alert('Пожалуйста, заполните все поля!');
     });
+
+    // Google Sign-In
+    window.onload = function() {
+      google.accounts.id.initialize({
+        client_id: 'ВАШ_CLIENT_ID_GOOGLE',
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.renderButton(
+        document.getElementById('googleSignInDiv'),
+        { theme: 'filled_black', size: 'large', width: '100%' }
+      );
+      google.accounts.id.prompt();
+    };
+
+    function handleCredentialResponse(response) {
+      console.log('Google JWT:', response.credential);
+      alert('Вход через Google выполнен!');
+      authOverlay.style.display='none';
+    }
   </script>
 
 </body>
