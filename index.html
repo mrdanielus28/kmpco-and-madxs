@@ -18,12 +18,12 @@
     body{background:var(--bg);color:var(--text);padding-bottom:80px;}
     header{width:100%;padding:20px 8%;background:var(--panel);border-bottom:2px solid #000;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
     header h1{font-size:26px;font-weight:900;letter-spacing:1px;color:var(--accent);text-shadow:0 0 7px rgba(184,0,0,0.6);animation:headerPulse 4s infinite;}
-    nav{display:flex;gap:25px;align-items:center;}
+    nav{display:flex;gap:15px;align-items:center;}
     nav a{text-decoration:none;color:var(--text-dim);font-size:15px;transition:var(--speed);}
     nav a:hover{color:var(--accent);text-shadow:0 0 6px rgba(184,0,0,0.8);}
-    .auth-buttons{display:flex;gap:12px;}
-    .auth-buttons button{background:var(--accent);border:none;padding:6px 14px;color:#fff;border-radius:var(--radius);cursor:pointer;font-weight:700;transition:var(--speed);}
-    .auth-buttons button:hover{box-shadow:0 0 10px rgba(184,0,0,0.6);transform:translateY(-2px);}
+    .auth-buttons{display:flex;gap:8px;}
+    .auth-buttons button{padding:8px 12px;background:var(--accent);border:none;border-radius:var(--radius);color:#fff;cursor:pointer;transition:var(--speed);font-weight:700;}
+    .auth-buttons button:hover{box-shadow:0 0 12px rgba(184,0,0,0.5);transform:translateY(-2px);}
 
     section{padding:40px 8%;}
     h2{font-size:28px;margin-bottom:18px;color:var(--accent);}    
@@ -42,17 +42,16 @@
     .post{background:#09090d;padding:12px;border-radius:var(--radius);border:1px solid #000;position:relative;display:flex;align-items:flex-start;gap:12px}
     .post img{width:44px;height:44px;border-radius:50%;object-fit:cover}
     .post-content{flex:1}
-    .post-header{font-weight:700;color:var(--accent);font-size:14px}
+    .post-header{font-weight:700;color:var(--accent);font-size:14}
     textarea{width:100%;height:84px;background:#0d0d12;border:1px solid #000;border-radius:var(--radius);color:var(--text);padding:8px;margin-bottom:8px;resize:vertical}
+
     .auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,12,0.95);display:flex;justify-content:center;align-items:center;z-index:100;display:none;}
     .auth-box{background:var(--panel);padding:20px;border-radius:var(--radius);display:flex;flex-direction:column;gap:12px;width:320px;}
     .send-btn{background:var(--accent);padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;transition:var(--speed)}
     .send-btn:hover{box-shadow:0 0 15px rgba(184,0,0,0.5);transform:translateY(-3px)}
+    .auth-title{text-align:center;color:var(--accent);margin-bottom:8px;font-size:18px;font-weight:700;}
 
     @keyframes headerPulse{0%{text-shadow:0 0 4px var(--accent)}50%{text-shadow:0 0 14px var(--accent)}100%{text-shadow:0 0 4px var(--accent)}}
-    audio{display:none}
-    .toast{position:fixed;bottom:20px;right:20px;background:#b80000;color:#fff;padding:12px 20px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity 0.4s;z-index:1000}
-    .toast.show{opacity:1;pointer-events:auto}
   </style>
 </head>
 <body>
@@ -64,10 +63,25 @@
       <a href="#forum">Форум</a>
       <a href="#download">Скачать</a>
       <div class="auth-buttons">
-        <button id="googleLoginBtn">Войти через Google</button>
+        <button id="loginHeaderBtn">Вход</button>
+        <button id="registerHeaderBtn">Регистрация</button>
       </div>
     </nav>
   </header>
+
+  <!-- Экран входа/регистрации -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-box">
+      <div class="auth-title" id="authTitle">Вход</div>
+      <input type="text" id="usernameInput" placeholder="Имя пользователя" />
+      <input type="email" id="emailInput" placeholder="Email" />
+      <input type="password" id="passwordInput" placeholder="Пароль" />
+      <button class="send-btn" id="submitAuth">Отправить</button>
+      <div style="text-align:center;margin:6px 0;color:var(--text-dim);">ИЛИ</div>
+      <button class="send-btn" id="googleLoginBtn">Войти через Google</button>
+      <button class="send-btn" id="closeAuth">Закрыть</button>
+    </div>
+  </div>
 
   <section id="features">
     <h2>Фишки сайта</h2>
@@ -108,15 +122,13 @@
     </div>
   </section>
 
-  <!-- Подключение Google JS только для входа -->
   <script src="google.js"></script>
   <script>
-    // Пример обработчика клика на Google Login
-    document.getElementById('googleLoginBtn').addEventListener('click',()=>{
-      // Здесь открываем окно Google OAuth и после успешного входа получаем данные
-      window.open('https://accounts.google.com/o/oauth2/v2/auth','googleLogin','width=500,height=600');
-      // Обработка входа через Google должна быть в google.js
-    });
+    const authOverlay = document.getElementById('authOverlay');
+    const authTitle = document.getElementById('authTitle');
+    document.getElementById('loginHeaderBtn').addEventListener('click',()=>{authOverlay.style.display='flex'; authTitle.textContent='Вход';});
+    document.getElementById('registerHeaderBtn').addEventListener('click',()=>{authOverlay.style.display='flex'; authTitle.textContent='Регистрация';});
+    document.getElementById('closeAuth').addEventListener('click',()=>{authOverlay.style.display='none';});
   </script>
 
 </body>
