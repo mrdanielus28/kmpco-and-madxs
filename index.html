@@ -46,7 +46,6 @@
     textarea{width:100%;height:84px;background:#0d0d12;border:1px solid #000;border-radius:var(--radius);color:var(--text);padding:8px;margin-bottom:8px;resize:vertical}
     .auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,12,0.95);display:flex;justify-content:center;align-items:center;z-index:100;display:none;}
     .auth-box{background:var(--panel);padding:20px;border-radius:var(--radius);display:flex;flex-direction:column;gap:12px;width:320px;}
-    .auth-box input{padding:8px;border-radius:8px;background:#0d0d12;border:1px solid #000;color:var(--text);}
     .send-btn{background:var(--accent);padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;transition:var(--speed)}
     .send-btn:hover{box-shadow:0 0 15px rgba(184,0,0,0.5);transform:translateY(-3px)}
 
@@ -57,8 +56,6 @@
   </style>
 </head>
 <body>
-  <audio id="bgMusic" src="music.mp3" loop autoplay></audio>
-  <div id="toast" class="toast"></div>
 
   <header>
     <h1>KMPCO & MADXS - GigaPlata</h1>
@@ -67,22 +64,10 @@
       <a href="#forum">Форум</a>
       <a href="#download">Скачать</a>
       <div class="auth-buttons">
-        <button id="loginBtn">Войти</button>
-        <button id="regBtn">Регистрация</button>
+        <button id="googleLoginBtn">Войти через Google</button>
       </div>
     </nav>
   </header>
-
-  <div id="authOverlay" class="auth-overlay">
-    <div class="auth-box">
-      <input type="text" id="usernameInput" placeholder="Имя пользователя" />
-      <input type="email" id="emailInput" placeholder="Email" />
-      <input type="password" id="passwordInput" placeholder="Пароль" />
-      <button class="send-btn" id="submitAuth">Отправить</button>
-      <button class="send-btn" id="googleLoginBtn">Войти через Google</button>
-      <button class="send-btn" id="closeAuth">Закрыть</button>
-    </div>
-  </div>
 
   <section id="features">
     <h2>Фишки сайта</h2>
@@ -94,7 +79,7 @@
     </div>
 
     <div class="download-box">
-      <a href="downloads/GigaPlata.exe" download id="downloadLink"><button class="download-btn">Скачать GigaPlata.exe</button></a>
+      <a href="downloads/GigaPlata.exe" download><button class="download-btn">Скачать GigaPlata.exe</button></a>
       <div class="counter-box">
         <div class="counter" id="globalCount">Всего скачиваний: 0</div>
       </div>
@@ -113,79 +98,26 @@
           <option value="bugs">Баги</option>
           <option value="offtopic">Оффтоп</option>
           <option value="other">Другое</option>
-          <option value="news">Новости</option>
-          <option value="fun">Развлечения</option>
-          <option value="tutorials">Туториалы</option>
         </select>
       </div>
       <div class="posts" id="posts"></div>
       <textarea id="msg" placeholder="Написать сообщение..."></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="send-btn" id="send">Отправить</button>
-        <button class="send-btn" id="cancelEdit" style="display:none;background:#444">Отменить редактирование</button>
       </div>
     </div>
   </section>
 
-<script>
-const postsEl = document.getElementById('posts');
-const msg = document.getElementById('msg');
-const send = document.getElementById('send');
-const topic = document.getElementById('topicSelect');
-const toast = document.getElementById('toast');
-const cancelEditBtn = document.getElementById('cancelEdit');
-const loginBtn = document.getElementById('loginBtn');
-const regBtn = document.getElementById('regBtn');
-const authOverlay = document.getElementById('authOverlay');
-const closeAuth = document.getElementById('closeAuth');
-const googleLoginBtn = document.getElementById('googleLoginBtn');
+  <!-- Подключение Google JS только для входа -->
+  <script src="google.js"></script>
+  <script>
+    // Пример обработчика клика на Google Login
+    document.getElementById('googleLoginBtn').addEventListener('click',()=>{
+      // Здесь открываем окно Google OAuth и после успешного входа получаем данные
+      window.open('https://accounts.google.com/o/oauth2/v2/auth','googleLogin','width=500,height=600');
+      // Обработка входа через Google должна быть в google.js
+    });
+  </script>
 
-function showToast(msgText){toast.textContent = msgText; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2500);}
-
-// Show/hide auth overlay
-loginBtn.addEventListener('click',()=>{authOverlay.style.display='flex';});
-regBtn.addEventListener('click',()=>{authOverlay.style.display='flex';});
-closeAuth.addEventListener('click',()=>{authOverlay.style.display='none';});
-
-// Downloads
-const globalCountEl = document.getElementById('globalCount');
-function getGlobalDownloads(){return parseInt(localStorage.getItem('globalDownloads')||'0',10);} 
-function setGlobalDownloads(n){localStorage.setItem('globalDownloads', String(n));}
-function incrementDownload(){
-  let global = getGlobalDownloads(); global++;
-  setGlobalDownloads(global);
-  updateCountsUI();
-}
-document.getElementById('downloadLink').addEventListener('click',()=>{
-  incrementDownload();
-  showToast('Спасибо! Скачивание зафиксировано');
-});
-function updateCountsUI(){
-  globalCountEl.textContent = 'Всего скачиваний: ' + getGlobalDownloads();
-}
-updateCountsUI();
-
-// Forum posts
-function loadForum(){try{return JSON.parse(localStorage.getItem('forum')||'{}');}catch(e){return {};}}
-function saveForum(f){localStorage.setItem('forum', JSON.stringify(f));}
-function renderPosts(){
-  postsEl.innerHTML='';
-  const forum = loadForum();
-  const arr = forum[topic.value] || [];
-  arr.forEach((p, i)=>{
-    const el = document.createElement('div'); el.className='post';
-    const img = document.createElement('img'); img.src = p.avatar || 'https://via.placeholder.com/40';
-    const content = document.createElement('div'); content.className='post-content';
-    const header = document.createElement('div'); header.className='post-header'; header.textContent = (p.username||'Аноним');
-    const text = document.createElement('div'); text.innerHTML = (p.text||'').split('\n').map(str=>str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')).join('<br>');
-    const time = document.createElement('span'); time.textContent = p.time || '';
-    content.appendChild(header); content.appendChild(text); content.appendChild(time);
-    el.appendChild(img); el.appendChild(content);
-    postsEl.appendChild(el);
-  });
-}
-if(topic) topic.addEventListener('change', renderPosts);
-renderPosts();
-</script>
 </body>
 </html>
